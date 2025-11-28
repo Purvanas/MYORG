@@ -1,0 +1,10 @@
+.env
+.env.local
+.env.*.local
+*.env
+*.env.local
+**/.env
+**/.env.local
+**/.env.*
+/Back/.env*
+/Front/.env*

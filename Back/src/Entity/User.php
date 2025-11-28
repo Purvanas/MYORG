@@ -4,6 +4,9 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -35,6 +38,20 @@ class User
 
     #[ORM\Column(length: 255)]
     private ?string $securityResponse = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?\DateTime $passwordDate = null;
+
+    /**
+     * @var Collection<int, UsedPassword>
+     */
+    #[ORM\OneToMany(targetEntity: UsedPassword::class, mappedBy: 'user')]
+    private Collection $usedPasswords;
+
+    public function __construct()
+    {
+        $this->usedPasswords = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -121,6 +138,48 @@ class User
     public function setSecurityResponse(string $securityResponse): static
     {
         $this->securityResponse = $securityResponse;
+
+        return $this;
+    }
+
+    public function getPasswordDate(): ?\DateTime
+    {
+        return $this->passwordDate;
+    }
+
+    public function setPasswordDate(\DateTime $passwordDate): static
+    {
+        $this->passwordDate = $passwordDate;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UsedPassword>
+     */
+    public function getUsedPasswords(): Collection
+    {
+        return $this->usedPasswords;
+    }
+
+    public function addUsedPassword(UsedPassword $usedPassword): static
+    {
+        if (!$this->usedPasswords->contains($usedPassword)) {
+            $this->usedPasswords->add($usedPassword);
+            $usedPassword->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUsedPassword(UsedPassword $usedPassword): static
+    {
+        if ($this->usedPasswords->removeElement($usedPassword)) {
+            // set the owning side to null (unless already changed)
+            if ($usedPassword->getUser() === $this) {
+                $usedPassword->setUser(null);
+            }
+        }
 
         return $this;
     }
